@@ -251,17 +251,17 @@ class faultViewer(QMainWindow):
             self.textFix100(False)
             self.draw()
             self.colorFix100(False)
-            self.hideButton.setChecked(False)
 
         else:
             self.treewidget.clear()
             self.textFix100(True)
             self.draw()
             self.colorFix100(True)
-            self.hideButton.setChecked(True)
 
-        self.highlightButton.setChecked(False)
-        self.hideButton.setChecked(False)
+        if self.highlightButton.isChecked():
+            self.highlight()
+        if self.hideButton.isChecked():
+            self.hide()
 
     def draw(self):
         for d in self.faults:
