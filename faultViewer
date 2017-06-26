@@ -79,6 +79,8 @@ class faultViewer(QMainWindow):
 
             self.faults = self.genEmptyFaults(self.faults)
 
+            self.faults = sorted(self.faults, key=lambda fault : fault['number'])
+
             self.faults = [self.catagoryFix(fault) for fault in self.faults]
 
             self.faults = [self.numberFix(fault) for fault in self.faults]
@@ -207,8 +209,15 @@ class faultViewer(QMainWindow):
 
             emptyfaults.append(fault)
         
+        duplicates = []
         for fault in faults:
-            emptyfaults[fault['number']] = fault
+            if emptyfaults[fault['number']]['catagory'] == "":
+                emptyfaults[fault['number']] = fault
+            else:
+                duplicates.append(fault)
+
+        for fault in duplicates:
+            emptyfaults.insert(fault['number'], fault)
 
         return emptyfaults
 
