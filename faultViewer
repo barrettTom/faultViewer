@@ -167,13 +167,16 @@ class faultViewer(QMainWindow):
             else:
                 loop = "10"
 
-            f = comment['text'][1:].find(" ") + 1
+            try:
+                f = comment['text'][1:].find(" ") + 1
 
-            sensor = comment['text'][1:f]
+                sensor = comment['text'][1:f]
 
-            comment['text'] = comment['text'][f:]
+                comment['text'] = comment['text'][f:]
 
-            comment['text'] = loop + mtn + "_" + stn + "_" + sensor + ":" + comment['text']
+                comment['text'] = loop + mtn + "_" + stn + "_" + sensor + ":" + comment['text']
+            except:
+                comment['text'] = "ERROR: NOT CORRECT FORMAT"
 
         return comment
 
