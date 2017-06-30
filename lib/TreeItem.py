@@ -3,9 +3,11 @@ class TreeItem(object):
         self.parentItem = parent
         self.childItems = []
 
-        self.itemData = ["","","",""]
-        for i, d in enumerate(data):
-            self.itemData[i] = d
+        self.itemData = [data['number'],
+                         data['catagory'],
+                         data['text'],
+                         data['literal']]
+
         self.itemData = tuple(self.itemData)
 
     def appendChild(self, item):
@@ -38,3 +40,10 @@ class TreeItem(object):
     def row(self):
         if self.parentItem:
             return self.parentItem.childItems.index(self)
+
+    def getFault(self):
+        fault = {'number'   : itemData[0],
+                 'catagory' : itemData[1],
+                 'text'     : itemData[2],
+                 'literal'  : itemData[3]}
+        return fault

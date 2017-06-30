@@ -8,11 +8,16 @@ class TreeModel(QAbstractItemModel):
     def __init__(self, path, parent=None):
         super(TreeModel, self).__init__(parent)
 
-        self.rootItem = TreeItem(["Fault Number", "Catagory", "Suggested Text", "Literal"])
+        header ={"number"   : "Fault Number",
+                 "catagory" : "Catagory",
+                 "text"     : "Suggested Text",
+                 "literal"  : "Literal"}
+        self.rootItem = TreeItem(header)
 
         self.path = path
 
-        self.isHighlighted = False
+        self.highlight = False
+        self.fix100 = False
 
         self.setupModel(path)
 
@@ -49,7 +54,7 @@ class TreeModel(QAbstractItemModel):
         if not index.isValid():
             return Qt.NoItemFlags
 
-        if index.column() == 2:
+        if index.column() == 3:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         else:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -99,26 +104,19 @@ class TreeModel(QAbstractItemModel):
         return item.data(index.column())
 
     def getColor(self, item):
-        return QBrush(Qt.transparent)
-        if self.isHighlighted:
-            if item.data(1) != item.data(3):
-                return QBrush(QColor(159,87,85))
-        if item.depth == 0:
-            return QBrush(QColor(157,159,85))
-        elif item.depth == 1:
-            return QBrush(QColor(85,157,159))
-        elif item.depth == 2:
-            return QBrush(QColor(85,120,159))
-        elif item.depth == 3:
-            return QBrush(QColor(87,85,159))
-        elif item.depth == 4:
-            return QBrush(QColor(120,159,85))
+        if self.highlight:
+            numbers = [fault['number'] for fault in self.faults]
+            if numbers.count(item.data(0)) > 1:
+                return QBrush(Qt.red)
+        if self.fix100:
+            numbers = [31,32,34,35,40,70,71]
+            if item.row() in numbers:
+                return QBrush(Qt.green)
 
     def setData(self, index, value, role):
         try:
+            """
             item = index.internalPointer()
-
-            if index.column() == 3:
 
                 dataPath = item.data(0).split(":")
                 element = self.findHW(dataPath)
@@ -126,17 +124,8 @@ class TreeModel(QAbstractItemModel):
                 element.text = ET.CDATA(value)
 
                 item.setData(value, index.column())
-
-            elif index.column() == 3:
-                dataPath = item.data(2).split(".")
-                element = self.findPA(dataPath)
-
-                element.text = ET.CDATA(value)
-
-                item.setData(value, index.column())
-
+            """
             return True
-
         except:
             print("Editing Error.")
             return False
@@ -149,7 +138,6 @@ class TreeModel(QAbstractItemModel):
         self.draw()
 
     def getFaults(self):
-
         self.faults = []
 
         for program in self.root.iter("Program"):
@@ -166,7 +154,6 @@ class TreeModel(QAbstractItemModel):
         self.faults = [self.catagoryFix(fault) for fault in self.faults]
 
         self.faults = [self.numberFix(fault) for fault in self.faults]
-
 
     def getFault(self, program, rung):
         fault = {   'number'    : "",
@@ -275,103 +262,57 @@ class TreeModel(QAbstractItemModel):
             fault['text'] = fault['number']
         return fault
 
-    def highlight(self):
-        self.isHighlighted = not self.isHighlighted
+    def highlightToggle(self):
+        self.highlight = not self.highlight
 
     def draw(self):
         for fault in self.faults:
-            item = TreeItem([fault['number'], fault['catagory'], fault['text'], fault['literal']], self.rootItem)
+            item = TreeItem(fault, self.rootItem)
             self.rootItem.appendChild(item)
 
-    def fix100(self):
-        if not self.fix100Button.isChecked():
-            self.treewidget.clear()
-            self.textFix100(False)
-            self.draw()
-            self.colorFix100(False)
+    def fix100Toggle(self):
+        self.fix100 = not self.fix100
+
+        if self.fix100:
+            child = self.rootItem.child(31)
+            child.setData(child.data(2).replace("G6","G5"),2)
+
+            child = self.rootItem.child(32)
+            child.setData(child.data(2).replace("G6","G5"),2)
+
+            child = self.rootItem.child(34)
+            child.setData(child.data(2).replace("G6","G5"),2)
+
+            child = self.rootItem.child(35)
+            child.setData(child.data(2).replace("G6","G4"),2)
+
+            child = self.rootItem.child(40)
+            child.setData(child.data(2).replace("G6","G5"),2)
+
+            child = self.rootItem.child(70)
+            child.setData(child.data(2).replace("G9","G3"),2)
+
+            child = self.rootItem.child(71)
+            child.setData(child.data(2).replace("G9","G3"),2)
 
         else:
-            self.treewidget.clear()
-            self.textFix100(True)
-            self.draw()
-            self.colorFix100(True)
+            child = self.rootItem.child(31)
+            child.setData(child.data(2).replace("G5","G6"),2)
 
-        if self.highlightButton.isChecked():
-            self.highlight()
-        if self.hideButton.isChecked():
-            self.hide()
+            child = self.rootItem.child(32)
+            child.setData(child.data(2).replace("G5","G6"),2)
 
-    def textFix100(self, forwards):
-        if forwards:
-            self.faults[31]['text'] = self.faults[31]['text'].replace("G6","G5")
-            self.faults[32]['text'] = self.faults[32]['text'].replace("G6","G5")
-            self.faults[34]['text'] = self.faults[34]['text'].replace("G6","G5")
-            self.faults[35]['text'] = self.faults[35]['text'].replace("G6","G4")
-            self.faults[40]['text'] = self.faults[40]['text'].replace("G6","G5")
-            self.faults[70]['text'] = self.faults[70]['text'].replace("G9","G3")
-            self.faults[71]['text'] = self.faults[71]['text'].replace("G9","G3")
+            child = self.rootItem.child(34)
+            child.setData(child.data(2).replace("G5","G6"),2)
 
-        else:
-            self.faults[31]['text'] = self.faults[31]['text'].replace("G5","G6")
-            self.faults[32]['text'] = self.faults[32]['text'].replace("G5","G6")
-            self.faults[34]['text'] = self.faults[34]['text'].replace("G5","G6")
-            self.faults[35]['text'] = self.faults[35]['text'].replace("G4","G6")
-            self.faults[40]['text'] = self.faults[40]['text'].replace("G5","G6")
-            self.faults[70]['text'] = self.faults[70]['text'].replace("G3","G9")
-            self.faults[71]['text'] = self.faults[71]['text'].replace("G3","G9")
+            child = self.rootItem.child(35)
+            child.setData(child.data(2).replace("G4","G6"),2)
 
-    def colorFix100(self, color):
-        children = []
-        root = self.treewidget.invisibleRootItem()
-        children.append(root.child(31))
-        children.append(root.child(32))
-        children.append(root.child(34))
-        children.append(root.child(35))
-        children.append(root.child(40))
-        children.append(root.child(70))
-        children.append(root.child(71))
+            child = self.rootItem.child(40)
+            child.setData(child.data(2).replace("G5","G6"),2)
 
-        for child in children:
-            if color:
-                child.setBackground(2, Qt.green)
-            else:
-                child.setBackground(2, Qt.white)
+            child = self.rootItem.child(70)
+            child.setData(child.data(2).replace("G3","G9"),2)
 
-    def hide(self):
-        if not self.hideButton.isChecked():
-            root = self.treewidget.invisibleRootItem()
-            count = root.childCount()
-            for i in range(count):
-                child = root.child(i)
-                if child.text(1) == "":
-                    child.setHidden(False)
-            self.hideButton.setChecked(False)
-        else:
-            root = self.treewidget.invisibleRootItem()
-            count = root.childCount()
-            for i in range(count):
-                child = root.child(i)
-                if child.text(1) == "":
-                    child.setHidden(True)
-            self.hideButton.setChecked(True)
-
-    def highlight(self):
-        if not self.highlightButton.isChecked():
-            root = self.treewidget.invisibleRootItem()
-            count = root.childCount()
-
-            for i in range(count):
-                child = root.child(i)
-                child.setBackground(0, Qt.white)
-
-            self.highlightButton.setChecked(False)
-        else:
-            root = self.treewidget.invisibleRootItem()
-            count = root.childCount()
-            tmp = [x['number'] for x in self.faults]
-            for i in range(count):
-                child = root.child(i)
-                if tmp.count(child.text(0)) != 1:
-                    child.setBackground(0, Qt.red)
-
-            self.highlightButton.setChecked(True)
+            child = self.rootItem.child(71)
+            child.setData(child.data(2).replace("G3","G9"),2)

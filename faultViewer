@@ -6,6 +6,7 @@ import csv
 import sys
 
 from lib.TreeModel import TreeModel
+from lib.Filter import Filter
 
 class faultViewer(QMainWindow):
     def __init__(self):
@@ -18,6 +19,7 @@ class faultViewer(QMainWindow):
         self.view.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.view.setAlternatingRowColors(True)
         self.model = False
+        self.hide = False
 
         if len(sys.argv) == 2:
             self.open(sys.argv[1])
@@ -39,19 +41,19 @@ class faultViewer(QMainWindow):
         self.hideButton = QAction('&Hide Generated', self)
         self.hideButton.setEnabled(False)
         self.hideButton.setCheckable(True)
-        self.hideButton.triggered.connect(self.hide)
+        self.hideButton.triggered.connect(self.hideToggle)
         viewMenu.addAction(self.hideButton)
 
         self.highlightButton = QAction('&Highlight Duplicates', self)
         self.highlightButton.setEnabled(False)
         self.highlightButton.setCheckable(True)
-        self.highlightButton.triggered.connect(self.highlight)
+        self.highlightButton.triggered.connect(self.highlightToggle)
         viewMenu.addAction(self.highlightButton)
 
         self.fix100Button = QAction('&Fix first 100', self)
         self.fix100Button.setEnabled(False)
         self.fix100Button.setCheckable(True)
-        self.fix100Button.triggered.connect(self.fix100)
+        self.fix100Button.triggered.connect(self.fix100Toggle)
         viewMenu.addAction(self.fix100Button)
 
     def open(self, f = None):
@@ -76,14 +78,20 @@ class faultViewer(QMainWindow):
                 for fault in self.faults:
                     writer.writerow([fault['number'], fault['catagory'], fault['text'], fault['literal']])
 
-    def highlight(self):
-        print("highlighting")
+    def highlightToggle(self):
+        self.model.highlightToggle()
 
-    def hide(self):
-        print("hiding")
+    def hideToggle(self):
+        self.hide = not self.hide
+        if self.hide:
+            self.filter = Filter(self)
+            self.filter.setSourceModel(self.model)
+            self.view.setModel(self.filter)
+        else:
+            self.view.setModel(self.model)
 
-    def fix100(self):
-        print("fixing")
+    def fix100Toggle(self):
+        self.model.fix100Toggle()
 
 app = QApplication(sys.argv)
 
