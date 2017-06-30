@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QTreeView, QHeaderView
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QTableView, QHeaderView
 import csv
 import sys
 
-from lib.TreeModel import TreeModel
+from lib.TableModel import TableModel
 from lib.Filter import Filter
 
 class faultViewer(QMainWindow):
@@ -14,10 +14,10 @@ class faultViewer(QMainWindow):
         
         self.menuInit()
 
-        self.view = QTreeView(self)
+        self.view = QTableView(self)
         self.setCentralWidget(self.view)
-        self.view.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.view.setAlternatingRowColors(True)
+        #self.view.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        #self.view.setAlternatingRowColors(True)
         self.model = False
         self.hide = False
 
@@ -63,7 +63,7 @@ class faultViewer(QMainWindow):
             path = f
 
         if path:
-            self.model = TreeModel(path)
+            self.model = TableModel(path)
             self.view.setModel(self.model)
 
         self.hideButton.setEnabled(True)
