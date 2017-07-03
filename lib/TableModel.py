@@ -1,5 +1,7 @@
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
 from PyQt5.QtGui import QBrush, QColor
+
+import csv
 import lxml.etree as ET
 
 from lib.Fault import Fault
@@ -77,16 +79,7 @@ class TableModel(QAbstractTableModel):
 
     def setData(self, index, value, role):
         try:
-            """
-            item = index.internalPointer()
-
-                dataPath = item.data(0).split(":")
-                element = self.findHW(dataPath)
-
-                element.text = ET.CDATA(value)
-
-                item.setData(value, index.column())
-            """
+            self.faults[index.row()].giveLiteral(value)
             return True
         except:
             print("Editing Error.")
@@ -96,7 +89,13 @@ class TableModel(QAbstractTableModel):
         if path is None:
             path = self.path
 
-        #self.tree.write(path, encoding='utf-8', standalone=True)
+        self.tree.write(path, encoding='utf-8', standalone=True)
+
+    def export(self, path):
+        with open(path+'.csv', 'w', newline = '') as csvFile:
+            writer = csv.writer(csvFile)
+            for fault in self.faults:
+                writer.writerow([fault.number, fault.catagory, fault.text, fault.literal])
 
     def getFaults(self):
         faults = []
@@ -133,7 +132,6 @@ class TableModel(QAbstractTableModel):
             emptyfaults.insert(fault.number, fault)
 
         return emptyfaults
-
 
     def highlightToggle(self):
         self.highlight = not self.highlight

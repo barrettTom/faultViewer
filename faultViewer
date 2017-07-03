@@ -32,6 +32,10 @@ class faultViewer(QMainWindow):
         openButton.triggered.connect(self.open)
         fileMenu.addAction(openButton)
 
+        saveButton = QAction('&Save', self)
+        saveButton.triggered.connect(self.save)
+        fileMenu.addAction(saveButton)
+
         exportButton = QAction('&Export CSV', self)
         exportButton.triggered.connect(self.export)
         fileMenu.addAction(exportButton)
@@ -74,13 +78,15 @@ class faultViewer(QMainWindow):
         self.highlightButton.setEnabled(True)
         self.fix100Button.setEnabled(True)
 
+    def save(self):
+        if self.model:
+            self.model.save()
+
     def export(self):
-        path = QFileDialog.getSaveFileName(self)
-        if path[0]:
-            with open(path[0]+'.csv', 'w', newline = '') as csvFile:
-                writer = csv.writer(csvFile, )
-                for fault in self.faults:
-                    writer.writerow([fault['number'], fault['catagory'], fault['text'], fault['literal']])
+        if self.model:
+            path = QFileDialog.getSaveFileName(self)[0]
+            if path:
+                self.model.export(path)
 
     def hideToggle(self):
         self.hide = not self.hide

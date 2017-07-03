@@ -1,3 +1,5 @@
+import lxml.etree as ET
+
 class Fault(object):
     def __init__(self, program, rung=None):
         self.program = program
@@ -97,3 +99,10 @@ class Fault(object):
             self.number = "Fault_" + n
         if self.text == "":
             self.text = self.number
+
+    def giveLiteral(self, value):
+        self.literal = value
+
+        f = ">"*75
+        value = '\n' + f + '\n' + value + '\n' + f + '\n'
+        self.element.text = ET.CDATA(value)
