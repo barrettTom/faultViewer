@@ -19,6 +19,7 @@ class Fault(object):
             self.literal = self.getFaultLiteral()
             self.text = self.getFaultText(self.literal)
             self.element = self.getFaultElement()
+
             self.valid = True
         except:
             self.number = program
@@ -72,3 +73,27 @@ class Fault(object):
     def getFaultElement(self):
         element = self.rung.findall("Comment")[0]
         return element
+
+    def fix(self):
+        self.catagoryFix()
+        self.numberFix()
+
+    def catagoryFix(self):
+        if self.catagory.find("Warning") != -1:
+            self.catagory = "M"
+        elif self.catagory.find("Stop") != -1:
+            self.catagory = "C"
+        elif self.catagory.find("Abort") != -1:
+            self.catagory = "I"
+        return self
+
+    def numberFix(self):
+        n = str(self.number)
+        if len(n) == 1:
+            self.number = "Fault_00" + n
+        if len(n) == 2:
+            self.number = "Fault_0" + n
+        if len(n) == 3:
+            self.number = "Fault_" + n
+        if self.text == "":
+            self.text = self.number

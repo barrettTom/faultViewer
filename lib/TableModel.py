@@ -13,13 +13,10 @@ class TableModel(QAbstractTableModel):
         self.highlight = False
         self.fix100 = False
 
-        self.setupModel(path)
-
-    def save(self,path=None):
-        if path is None:
-            path = self.path
-
-        #self.tree.write(path, encoding='utf-8', standalone=True)
+        self.parser = ET.XMLParser(strip_cdata=False, resolve_entities=False)
+        self.tree = ET.parse(path, parser=self.parser)
+        self.root = self.tree.getroot()
+        self.faults = self.getFaults()
 
     def headerData(self, column, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -39,7 +36,6 @@ class TableModel(QAbstractTableModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.NoItemFlags
-
         if index.column() == 3:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         else:
@@ -96,11 +92,11 @@ class TableModel(QAbstractTableModel):
             print("Editing Error.")
             return False
 
-    def setupModel(self, path):
-        self.parser = ET.XMLParser(strip_cdata=False, resolve_entities=False)
-        self.tree = ET.parse(path, parser=self.parser)
-        self.root = self.tree.getroot()
-        self.faults = self.getFaults()
+    def save(self,path=None):
+        if path is None:
+            path = self.path
+
+        #self.tree.write(path, encoding='utf-8', standalone=True)
 
     def getFaults(self):
         faults = []
@@ -116,9 +112,7 @@ class TableModel(QAbstractTableModel):
 
         faults = sorted(faults, key=lambda fault : fault.number)
 
-        faults = [self.catagoryFix(fault) for fault in faults]
-
-        faults = [self.numberFix(fault) for fault in faults]
+        for fault in faults: fault.fix()
 
         return faults
 
@@ -140,26 +134,6 @@ class TableModel(QAbstractTableModel):
 
         return emptyfaults
 
-    def catagoryFix(self, fault):
-        if fault.catagory.find("Warning") != -1:
-            fault.catagory = "M"
-        elif fault.catagory.find("Stop") != -1:
-            fault.catagory = "C"
-        elif fault.catagory.find("Abort") != -1:
-            fault.catagory = "I"
-        return fault
-
-    def numberFix(self, fault):
-        n = str(fault.number)
-        if len(n) == 1:
-            fault.number = "Fault_00" + n
-        if len(n) == 2:
-            fault.number = "Fault_0" + n
-        if len(n) == 3:
-            fault.number = "Fault_" + n
-        if fault.text == "":
-            fault.text = fault.number
-        return fault
 
     def highlightToggle(self):
         self.highlight = not self.highlight
