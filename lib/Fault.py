@@ -1,4 +1,4 @@
-class Fault():
+class Fault(object):
     def __init__(self, program, rung=None):
         self.program = program
         self.rung = rung

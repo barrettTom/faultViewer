@@ -2,7 +2,6 @@ from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
 from PyQt5.QtGui import QBrush, QColor
 import lxml.etree as ET
 
-from lib.TableItem import TableItem
 from lib.Fault import Fault
 
 class TableModel(QAbstractTableModel):
