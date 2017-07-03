@@ -65,9 +65,11 @@ class Fault(object):
 
             sensor = comment[1:f]
 
-            comment = comment[f:]
-
-            comment = loop + mtn + "_" + stn + "_" + sensor + ":" + comment
+            if sensor == "Consecutive":
+                comment = loop + mtn + "_" + stn + ":" + comment
+            else:
+                comment = comment[f:]
+                comment = loop + mtn + "_" + stn + "_" + sensor + ":" + comment
         except:
             comment = "ERROR: NOT CORRECT FORMAT"
 
@@ -94,6 +96,7 @@ class Fault(object):
     def giveLiteral(self, value):
         self.literal = value
         self.element.text = ET.CDATA(self.format(value))
+        self.text = self.getText(self.literal)
 
     def getElement(self):
         element = self.rung.findall("Comment")[0]
