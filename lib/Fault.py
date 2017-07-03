@@ -5,8 +5,18 @@ class Fault(object):
         self.program = program
         self.rung = rung
         try:
+            gottaFix = self.rung.findall("Comment")
+            if gottaFix:
+                gottaFix = gottaFix[0]
+                text = gottaFix.text
+                text = text.strip()
+                text = text.replace("\n", " \n")
+                gottaFix.text = ET.CDATA(text)
+
             textElement = str(rung.findall("Text")[0].text)
+
             f = textElement.find("AOI_Fault_Set_Reset")
+
             if f == -1:
                 self.valid = False
                 return
@@ -18,9 +28,9 @@ class Fault(object):
             self.number = int(textElement[0])
             self.catagory = textElement[1]
 
-            self.literal = self.getFaultLiteral()
-            self.text = self.getFaultText(self.literal)
-            self.element = self.getFaultElement()
+            self.literal = self.getLiteral()
+            self.text = self.getText(self.literal)
+            self.element = self.getElement()
 
             self.valid = True
         except:
@@ -30,7 +40,7 @@ class Fault(object):
             self.literal = ""
             self.valid = False
 
-    def getFaultText(self, literal):
+    def getText(self, literal):
         if len(literal.split(':')) == 2:
             comment = literal.split(':')[1]
         elif len(literal.split(':')) == 3:
@@ -63,16 +73,29 @@ class Fault(object):
 
         return comment
 
-    def getFaultLiteral(self):
+    def format(self, text):
+        text = text.strip()
+        f = ">"*75
+        text = f + ' \n ' + text + ' \n' + f + '\n'
+        return text
+
+    def getLiteral(self):
         literal = self.rung.findall("Comment")
         if literal:
-            literal = literal[0].text
-            literal = literal.split('\n')[2]
-            return literal
+            literal = literal[0]
+
+            r = literal.text.split("\n")[1]
+            literal.text = ET.CDATA(self.format(r))
+
+            return r
         else:
             return False
 
-    def getFaultElement(self):
+    def giveLiteral(self, value):
+        self.literal = value
+        self.element.text = ET.CDATA(self.format(value))
+
+    def getElement(self):
         element = self.rung.findall("Comment")[0]
         return element
 
@@ -100,9 +123,3 @@ class Fault(object):
         if self.text == "":
             self.text = self.number
 
-    def giveLiteral(self, value):
-        self.literal = value
-
-        f = ">"*75
-        value = '\n' + f + '\n' + value + '\n' + f + '\n'
-        self.element.text = ET.CDATA(value)
