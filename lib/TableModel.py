@@ -44,7 +44,7 @@ class TableModel(QAbstractTableModel):
         if index.column() == 3:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         else:
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            return Qt.ItemIsEnabled
 
     def data(self, index, role):
         if not index.isValid():

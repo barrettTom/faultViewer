@@ -65,6 +65,10 @@ class faultViewer(QMainWindow):
             self.model = TableModel(path)
             self.view.setModel(self.model)
             self.view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.view.horizontalHeader().setStretchLastSection(True)
+            self.view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+            self.view.verticalHeader().setDefaultSectionSize(15)
+            self.view.setShowGrid(False)
 
         self.hideButton.setEnabled(True)
         self.highlightButton.setEnabled(True)
