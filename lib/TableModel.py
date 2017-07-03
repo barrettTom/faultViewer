@@ -80,7 +80,7 @@ class TableModel(QAbstractTableModel):
         if self.check:
             numbers = [6,7,11,12,13,14,24,28,31,32,34,40,70,71]
             if index.row() in numbers:
-                return QBrush(Qt.blue)
+                return QBrush(Qt.yellow)
 
     def setData(self, index, value, role):
         try:
