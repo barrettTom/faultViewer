@@ -9,9 +9,6 @@ class TableModel(QAbstractTableModel):
     def __init__(self, path, parent=None):
         super(TableModel, self).__init__(parent)
 
-        #header = Fault("Fault Number", "Catagory", "Suggested Text", "Literal")
-        #self.rootItem = TreeItem(header)
-
         self.path = path
 
         self.highlight = False
@@ -24,6 +21,15 @@ class TableModel(QAbstractTableModel):
             path = self.path
 
         #self.tree.write(path, encoding='utf-8', standalone=True)
+
+    def headerData(self, column, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            if   column == 0: return QVariant("Fault Number")
+            elif column == 1: return QVariant("Catagory")
+            elif column == 2: return QVariant("Suggested Text")
+            elif column == 3: return QVariant("Literal")
+
+        return QVariant()
 
     def rowCount(self, parent):
         return len(self.faults)
@@ -40,28 +46,18 @@ class TableModel(QAbstractTableModel):
         else:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-    """
-    def index(self, row, column, parent):
-        if not self.hasIndex(row, column, parent):
-            return QModelIndex()
-
-        if not parent.isValid():
-            parentItem = self.rootItem
-        else:
-            parentItem = parent.internalPointer()
-
-        childItem = parentItem.child(row)
-        if childItem:
-            return self.createIndex(row, column, childItem)
-        else:
-            return QModelIndex()
-    """
-
     def data(self, index, role):
         if not index.isValid():
             return QVariant()
-        #elif role != Qt.DisplayRole:
-        #    return None
+
+        if role == Qt.BackgroundRole:
+            return self.getColor(index)
+
+        if role == Qt.EditRole:
+            return self.faults[index.row()].literal
+
+        if role != Qt.DisplayRole:
+            return None
 
         if index.column() == 0:
             return QVariant(self.faults[index.row()].number)
@@ -72,26 +68,16 @@ class TableModel(QAbstractTableModel):
         if index.column() == 3:
             return QVariant(self.faults[index.row()].literal)
 
-        """
-        item = index.internalPointer()
+        return QVariant()
 
-        if role == Qt.BackgroundRole:
-            return self.getColor(item)
-
-        if role == Qt.EditRole:
-            return item.data(index.column())
-
-        return item.data(index.column())
-        """
-
-    def getColor(self, item):
+    def getColor(self, index):
         if self.highlight:
             numbers = [fault.number for fault in self.faults]
-            if numbers.count(item.data(0)) > 1:
+            if numbers.count(self.faults[index.row()].number) > 1:
                 return QBrush(Qt.red)
         if self.fix100:
             numbers = [31,32,34,35,40,70,71]
-            if item.row() in numbers:
+            if index.row() in numbers:
                 return QBrush(Qt.green)
 
     def setData(self, index, value, role):
@@ -183,45 +169,45 @@ class TableModel(QAbstractTableModel):
         self.fix100 = not self.fix100
 
         if self.fix100:
-            child = self.rootItem.child(31)
-            child.setData(child.data(2).replace("G6","G5"),2)
+            fault = self.faults[31]
+            fault.text = fault.text.replace("G6", "G5")
 
-            child = self.rootItem.child(32)
-            child.setData(child.data(2).replace("G6","G5"),2)
+            fault = self.faults[32]
+            fault.text = fault.text.replace("G6", "G5")
 
-            child = self.rootItem.child(34)
-            child.setData(child.data(2).replace("G6","G5"),2)
+            fault = self.faults[34]
+            fault.text = fault.text.replace("G6", "G5")
 
-            child = self.rootItem.child(35)
-            child.setData(child.data(2).replace("G6","G4"),2)
+            fault = self.faults[35]
+            fault.text = fault.text.replace("G6", "G4")
 
-            child = self.rootItem.child(40)
-            child.setData(child.data(2).replace("G6","G5"),2)
+            fault = self.faults[40]
+            fault.text = fault.text.replace("G6", "G5")
 
-            child = self.rootItem.child(70)
-            child.setData(child.data(2).replace("G9","G3"),2)
+            fault = self.faults[70]
+            fault.text = fault.text.replace("G9", "G3")
 
-            child = self.rootItem.child(71)
-            child.setData(child.data(2).replace("G9","G3"),2)
+            fault = self.faults[71]
+            fault.text = fault.text.replace("G9", "G3")
 
         else:
-            child = self.rootItem.child(31)
-            child.setData(child.data(2).replace("G5","G6"),2)
+            fault = self.faults[31]
+            fault.text = fault.text.replace("G5", "G6")
 
-            child = self.rootItem.child(32)
-            child.setData(child.data(2).replace("G5","G6"),2)
+            fault = self.faults[32]
+            fault.text = fault.text.replace("G5", "G6")
 
-            child = self.rootItem.child(34)
-            child.setData(child.data(2).replace("G5","G6"),2)
+            fault = self.faults[34]
+            fault.text = fault.text.replace("G5", "G6")
 
-            child = self.rootItem.child(35)
-            child.setData(child.data(2).replace("G4","G6"),2)
+            fault = self.faults[35]
+            fault.text = fault.text.replace("G4", "G6")
 
-            child = self.rootItem.child(40)
-            child.setData(child.data(2).replace("G5","G6"),2)
+            fault = self.faults[40]
+            fault.text = fault.text.replace("G5", "G6")
 
-            child = self.rootItem.child(70)
-            child.setData(child.data(2).replace("G3","G9"),2)
+            fault = self.faults[70]
+            fault.text = fault.text.replace("G3", "G9")
 
-            child = self.rootItem.child(71)
-            child.setData(child.data(2).replace("G3","G9"),2)
+            fault = self.faults[71]
+            fault.text = fault.text.replace("G3", "G9")

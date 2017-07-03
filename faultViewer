@@ -16,8 +16,7 @@ class faultViewer(QMainWindow):
 
         self.view = QTableView(self)
         self.setCentralWidget(self.view)
-        #self.view.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        #self.view.setAlternatingRowColors(True)
+
         self.model = False
         self.hide = False
 
@@ -65,6 +64,7 @@ class faultViewer(QMainWindow):
         if path:
             self.model = TableModel(path)
             self.view.setModel(self.model)
+            self.view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.hideButton.setEnabled(True)
         self.highlightButton.setEnabled(True)
@@ -78,9 +78,6 @@ class faultViewer(QMainWindow):
                 for fault in self.faults:
                     writer.writerow([fault['number'], fault['catagory'], fault['text'], fault['literal']])
 
-    def highlightToggle(self):
-        self.model.highlightToggle()
-
     def hideToggle(self):
         self.hide = not self.hide
         if self.hide:
@@ -89,6 +86,9 @@ class faultViewer(QMainWindow):
             self.view.setModel(self.filter)
         else:
             self.view.setModel(self.model)
+
+    def highlightToggle(self):
+        self.model.highlightToggle()
 
     def fix100Toggle(self):
         self.model.fix100Toggle()
