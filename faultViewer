@@ -53,6 +53,12 @@ class faultViewer(QMainWindow):
         self.highlightButton.triggered.connect(self.highlightToggle)
         viewMenu.addAction(self.highlightButton)
 
+        self.checkButton = QAction('&Double Check These...', self)
+        self.checkButton.setEnabled(False)
+        self.checkButton.setCheckable(True)
+        self.checkButton.triggered.connect(self.checkToggle)
+        viewMenu.addAction(self.checkButton)
+
         self.fix100Button = QAction('&Fix first 100', self)
         self.fix100Button.setEnabled(False)
         self.fix100Button.setCheckable(True)
@@ -76,6 +82,7 @@ class faultViewer(QMainWindow):
 
         self.hideButton.setEnabled(True)
         self.highlightButton.setEnabled(True)
+        self.checkButton.setEnabled(True)
         self.fix100Button.setEnabled(True)
 
     def save(self):
@@ -99,6 +106,9 @@ class faultViewer(QMainWindow):
 
     def highlightToggle(self):
         self.model.highlightToggle()
+
+    def checkToggle(self):
+        self.model.checkToggle()
 
     def fix100Toggle(self):
         self.model.fix100Toggle()

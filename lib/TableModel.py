@@ -13,6 +13,7 @@ class TableModel(QAbstractTableModel):
         self.path = path
 
         self.highlight = False
+        self.check = False
         self.fix100 = False
 
         self.parser = ET.XMLParser(strip_cdata=False, resolve_entities=False)
@@ -76,6 +77,10 @@ class TableModel(QAbstractTableModel):
             numbers = [31,32,34,35,40,70,71]
             if index.row() in numbers:
                 return QBrush(Qt.green)
+        if self.check:
+            numbers = [6,7,11,12,13,14,24,28,31,32,34,40,70,71]
+            if index.row() in numbers:
+                return QBrush(Qt.blue)
 
     def setData(self, index, value, role):
         try:
@@ -135,6 +140,9 @@ class TableModel(QAbstractTableModel):
 
     def highlightToggle(self):
         self.highlight = not self.highlight
+
+    def checkToggle(self):
+        self.check = not self.check
 
     def fix100Toggle(self):
         self.fix100 = not self.fix100
