@@ -1,18 +1,17 @@
 #!/usr/bin/python3
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QTableView, QHeaderView
-import csv
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableView, QHeaderView
 import sys
 
 from lib.TableModel import TableModel
 from lib.Filter import Filter
+from lib.menubar import menubar
 
 class faultViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        self.menuInit()
+        menubar(self)
 
         self.view = QTableView(self)
         self.setCentralWidget(self.view)
@@ -24,46 +23,6 @@ class faultViewer(QMainWindow):
             self.open(sys.argv[1])
 
         self.show()
-
-    def menuInit(self):
-        menu = self.menuBar()
-        fileMenu = menu.addMenu('&File')
-        openButton = QAction('&Open', self)
-        openButton.triggered.connect(self.open)
-        fileMenu.addAction(openButton)
-
-        saveButton = QAction('&Save', self)
-        saveButton.triggered.connect(self.save)
-        fileMenu.addAction(saveButton)
-
-        exportButton = QAction('&Export CSV', self)
-        exportButton.triggered.connect(self.export)
-        fileMenu.addAction(exportButton)
-
-        viewMenu = menu.addMenu('&View')
-        self.hideButton = QAction('&Hide Generated', self)
-        self.hideButton.setEnabled(False)
-        self.hideButton.setCheckable(True)
-        self.hideButton.triggered.connect(self.hideToggle)
-        viewMenu.addAction(self.hideButton)
-
-        self.highlightButton = QAction('&Highlight Duplicates', self)
-        self.highlightButton.setEnabled(False)
-        self.highlightButton.setCheckable(True)
-        self.highlightButton.triggered.connect(self.highlightToggle)
-        viewMenu.addAction(self.highlightButton)
-
-        self.checkButton = QAction('&Double Check These...', self)
-        self.checkButton.setEnabled(False)
-        self.checkButton.setCheckable(True)
-        self.checkButton.triggered.connect(self.checkToggle)
-        viewMenu.addAction(self.checkButton)
-
-        self.fix100Button = QAction('&Fix first 100', self)
-        self.fix100Button.setEnabled(False)
-        self.fix100Button.setCheckable(True)
-        self.fix100Button.triggered.connect(self.fix100Toggle)
-        viewMenu.addAction(self.fix100Button)
 
     def open(self, f = None):
         if not f:
