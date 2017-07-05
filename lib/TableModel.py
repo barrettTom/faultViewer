@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
+from PyQt5.QtCore import Qt, QAbstractTableModel, QVariant
 from PyQt5.QtGui import QBrush, QColor
 
 import csv
@@ -10,12 +10,11 @@ class TableModel(QAbstractTableModel):
     def __init__(self, path, parent=None):
         super(TableModel, self).__init__(parent)
 
-        self.path = path
-
         self.highlight = False
         self.check = False
         self.fix100 = False
 
+        self.path = path
         self.parser = ET.XMLParser(strip_cdata=False, resolve_entities=False)
         self.tree = ET.parse(path, parser=self.parser)
         self.root = self.tree.getroot()
