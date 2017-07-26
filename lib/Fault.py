@@ -77,7 +77,7 @@ class Fault(object):
         literal = self.rung.find("Comment")
         if literal is not None:
             r = literal.text.split("\n")[2]
-            if r.find(">") != -1:
+            if ">" in r:
                 r = literal.text.split("\n")[1]
             return r
         else:
@@ -98,11 +98,11 @@ class Fault(object):
         self.numberFix()
 
     def catagoryFix(self):
-        if self.catagory.find("Warning") != -1:
+        if "Warning" in self.catagory:
             self.catagory = "M"
-        elif self.catagory.find("Stop") != -1:
+        elif "Stop" in self.catagory:
             self.catagory = "C"
-        elif self.catagory.find("Abort") != -1:
+        elif "Abort" in self.catagory:
             self.catagory = "I"
         return self
 
