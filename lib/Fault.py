@@ -5,7 +5,7 @@ class Fault(object):
         self.program = program
         self.rung = rung
         try:
-            textElement = str(rung.findall("Text")[0].text)
+            textElement = str(rung.find("Text").text)
 
             f = textElement.find("AOI_Fault_Set_Reset")
 
@@ -57,7 +57,7 @@ class Fault(object):
 
             sensor = comment[1:f]
 
-            if sensor == "Consecutive":
+            if sensor == "Consecutive" or sensor == "Vehicle":
                 comment = loop + mtn + "_" + stn + ":" + comment
             else:
                 comment = comment[f:]
@@ -74,9 +74,8 @@ class Fault(object):
         return text
 
     def getLiteral(self):
-        literal = self.rung.findall("Comment")
-        if literal:
-            literal = literal[0]
+        literal = self.rung.find("Comment")
+        if literal is not None:
             r = literal.text.split("\n")[2]
             if r.find(">") != -1:
                 r = literal.text.split("\n")[1]
@@ -91,7 +90,7 @@ class Fault(object):
         self.text = self.getText(self.literal)
 
     def getElement(self):
-        element = self.rung.findall("Comment")[0]
+        element = self.rung.find("Comment")
         return element
 
     def fix(self):
