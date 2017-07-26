@@ -3,6 +3,8 @@ from PyQt5.QtGui import QBrush, QColor
 
 import csv
 import lxml.etree as ET
+import codecs
+import os
 
 from lib.Fault import Fault
 
@@ -93,7 +95,15 @@ class TableModel(QAbstractTableModel):
         if path is None:
             path = self.path
 
-        self.tree.write(path, encoding='utf-8', standalone=True)
+        self.tree.write(path+'utf-8', encoding='utf-8', standalone=True)
+
+        with codecs.open(path+'utf-8', 'r', 'utf-8') as sourceFile:
+            with codecs.open(path, 'w', 'utf-8-sig') as targetFile:
+                contents = sourceFile.read()
+                contents = contents.replace("\n", "\r\n")
+                targetFile.write(contents)
+
+        os.remove(path+'utf-8')
 
     def export(self, path):
         with open(path+'.csv', 'w', newline = '') as csvFile:

@@ -5,14 +5,6 @@ class Fault(object):
         self.program = program
         self.rung = rung
         try:
-            gottaFix = self.rung.findall("Comment")
-            if gottaFix:
-                gottaFix = gottaFix[0]
-                text = gottaFix.text
-                text = text.strip()
-                text = text.replace("\n", " \n")
-                gottaFix.text = ET.CDATA(text)
-
             textElement = str(rung.findall("Text")[0].text)
 
             f = textElement.find("AOI_Fault_Set_Reset")
@@ -77,18 +69,17 @@ class Fault(object):
 
     def format(self, text):
         text = text.strip()
-        f = ">"*75
-        text = f + ' \n ' + text + ' \n' + f + '\n'
+        f = '>'*75
+        text = f + '\n' + text + '\n' + f
         return text
 
     def getLiteral(self):
         literal = self.rung.findall("Comment")
         if literal:
             literal = literal[0]
-
-            r = literal.text.split("\n")[1]
-            literal.text = ET.CDATA(self.format(r))
-
+            r = literal.text.split("\n")[2]
+            if r.find(">") != -1:
+                r = literal.text.split("\n")[1]
             return r
         else:
             return False
@@ -96,6 +87,7 @@ class Fault(object):
     def giveLiteral(self, value):
         self.literal = value
         self.element.text = ET.CDATA(self.format(value))
+        
         self.text = self.getText(self.literal)
 
     def getElement(self):
