@@ -57,7 +57,7 @@ class Fault(object):
 
             sensor = comment[1:f]
 
-            if sensor == "Consecutive" or sensor == "Vehicle":
+            if sensor == "Consecutive" or sensor == "Vehicle" or sensor == "At" or sensor == "Manual":
                 comment = loop + mtn + "_" + stn + ":" + comment
             else:
                 comment = comment[f:]
@@ -77,7 +77,7 @@ class Fault(object):
         literal = self.rung.find("Comment")
         if literal is not None:
             r = literal.text.split("\n")[2]
-            if ">" in r:
+            if r.count(">") > 2:
                 r = literal.text.split("\n")[1]
             return r
         else:
