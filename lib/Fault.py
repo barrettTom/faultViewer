@@ -1,4 +1,5 @@
 import lxml.etree as ET
+from lxml.etree import tostring, fromstring, XMLParser
 
 class Fault(object):
     def __init__(self, program, rung=None):
@@ -12,6 +13,8 @@ class Fault(object):
             if f == -1:
                 self.valid = False
                 return
+
+            self.fullElement = rung.find("Text")
 
             textElement = textElement[f:]
             p = textElement.find(')')
@@ -82,6 +85,25 @@ class Fault(object):
             return r
         else:
             return False
+
+    def giveNumber(self, value):
+        newNum = value.split("_")[1]
+        oldNum = self.number.split("_")[1]
+
+        self.number = self.number.replace(oldNum, newNum)
+        
+        string = tostring(self.fullElement)
+
+        newNum = bytes(str(int(newNum)), encoding="utf-8")
+        oldNum = bytes(str(int(oldNum)), encoding="utf-8")
+        
+        string = string.replace(oldNum, newNum)
+
+        replacement = fromstring(string, parser = XMLParser(strip_cdata=False))
+
+        self.fullElement.getparent().replace(self.fullElement, replacement)
+
+        self.fullElement = replacement
 
     def giveLiteral(self, value):
         self.literal = value

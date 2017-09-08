@@ -40,7 +40,7 @@ class TableModel(QAbstractTableModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.NoItemFlags
-        if index.column() == 3:
+        if index.column() == 3 or index.column() == 0:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         else:
             return Qt.ItemIsEnabled
@@ -53,7 +53,10 @@ class TableModel(QAbstractTableModel):
             return self.getColor(index)
 
         if role == Qt.EditRole:
-            return self.faults[index.row()].literal
+            if index.column() == 0:
+                return self.faults[index.row()].number
+            elif index.column() == 3:
+                return self.faults[index.row()].literal
 
         if role != Qt.DisplayRole:
             return None
@@ -85,7 +88,10 @@ class TableModel(QAbstractTableModel):
 
     def setData(self, index, value, role):
         try:
-            self.faults[index.row()].giveLiteral(value)
+            if index.column() == 0:
+                self.faults[index.row()].giveNumber(value)
+            elif index.column() == 3:
+                self.faults[index.row()].giveLiteral(value)
             return True
         except:
             print("Editing Error.")
