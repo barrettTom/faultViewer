@@ -90,6 +90,10 @@ class TableModel(QAbstractTableModel):
         try:
             if index.column() == 0:
                 self.faults[index.row()].giveNumber(value)
+                self.faults = self.remEmptyFaults(self.faults)
+                self.faults = self.genEmptyFaults(self.faults)
+                self.faults = sorted(self.faults, key = lambda fault : fault.number)  
+
             elif index.column() == 3:
                 self.faults[index.row()].giveLiteral(value)
             return True
@@ -124,14 +128,8 @@ class TableModel(QAbstractTableModel):
             for rung in program.iter("Rung"):
                 fault = Fault(program, rung)
                 if fault.valid: faults.append(fault)
-
-        faults = sorted(faults, key=lambda fault : fault.number)
-
+        
         faults = self.genEmptyFaults(faults)
-
-        faults = sorted(faults, key=lambda fault : fault.number)
-
-        for fault in faults: fault.fix()
 
         return faults
 
@@ -143,15 +141,26 @@ class TableModel(QAbstractTableModel):
 
         duplicates = []
         for fault in faults:
-            if emptyfaults[fault.number].catagory == "":
-                emptyfaults[fault.number] = fault
+            if emptyfaults[fault.index].catagory == "":
+                emptyfaults[fault.index] = fault
             else:
                 duplicates.append(fault)
 
         for fault in duplicates:
-            emptyfaults.insert(fault.number, fault)
+            emptyfaults.insert(fault.index, fault)
 
         return emptyfaults
+
+    def remEmptyFaults(self, faults):
+        faultsToBeRemoved = []
+        for fault in faults:
+            if fault.catagory == "":
+                faultsToBeRemoved.append(fault)
+
+        for fault in faultsToBeRemoved:
+            faults.remove(fault)
+
+        return faults
 
     def highlightToggle(self):
         self.highlight = not self.highlight

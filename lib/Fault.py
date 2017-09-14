@@ -3,16 +3,13 @@ from lxml.etree import tostring, fromstring, XMLParser
 
 class Fault(object):
     def __init__(self, program, rung=None):
-        self.program = program
-        self.rung = rung
         try:
             textElement = str(rung.find("Text").text)
-
+            
             f = textElement.find("AOI_Fault_Set_Reset")
-
+            
             if f == -1:
-                self.valid = False
-                return
+                raise Exception
 
             self.fullElement = rung.find("Text")
 
@@ -20,28 +17,29 @@ class Fault(object):
             p = textElement.find(')')
             textElement = textElement[:p].split(',')[2:4]
 
-            self.number = int(textElement[0])
-            self.catagory = textElement[1]
-
-            self.literal = self.getLiteral()
-            self.text = self.getText(self.literal)
-            self.element = self.getElement()
-
+            self.index = int(textElement[0])
+            self.number = self.numberFormat(self.index)
+            self.catagory = self.catagoryFix(textElement[1])
+            self.literal = self.getLiteral(rung)
+            self.text = self.getText(program, self.literal)
+            self.element = self.getElement(rung)
             self.valid = True
+
         except:
-            self.number = program
+            self.index = program
+            self.number = self.numberFormat(self.index)
             self.catagory = ""
-            self.text = ""
+            self.text = self.number
             self.literal = ""
             self.valid = False
 
-    def getText(self, literal):
+    def getText(self, program, literal):
         if len(literal.split(':')) == 2:
             comment = literal.split(':')[1]
         elif len(literal.split(':')) == 3:
             comment = literal.split(':')[1] + literal.split(':')[2]
 
-        name = self.program.attrib['Name'].split("_")[1]
+        name = program.attrib['Name'].split("_")[1]
         mtn = name[:3]
         stn = name[3:]
         if stn == "":
@@ -76,8 +74,8 @@ class Fault(object):
         text = f + '\n' + text + '\n' + f
         return text
 
-    def getLiteral(self):
-        literal = self.rung.find("Comment")
+    def getLiteral(self, rung):
+        literal = rung.find("Comment")
         if literal is not None:
             r = literal.text.split("\n")[2]
             if r.count(">") > 2:
@@ -105,37 +103,30 @@ class Fault(object):
 
         self.fullElement = replacement
 
+        self.index = int(newNum)
+
     def giveLiteral(self, value):
         self.literal = value
         self.element.text = ET.CDATA(self.format(value))
-        
         self.text = self.getText(self.literal)
 
-    def getElement(self):
-        element = self.rung.find("Comment")
+    def getElement(self, rung):
+        element = rung.find("Comment")
         return element
 
-    def fix(self):
-        self.catagoryFix()
-        self.numberFix()
+    def catagoryFix(self, catagory):
+        if "Warning" in catagory:
+            return "M"
+        elif "Stop" in catagory:
+            return "C"
+        elif "Abort" in catagory:
+            return "I"
 
-    def catagoryFix(self):
-        if "Warning" in self.catagory:
-            self.catagory = "M"
-        elif "Stop" in self.catagory:
-            self.catagory = "C"
-        elif "Abort" in self.catagory:
-            self.catagory = "I"
-        return self
-
-    def numberFix(self):
-        n = str(self.number)
+    def numberFormat(self, number):
+        n = str(number)
         if len(n) == 1:
-            self.number = "Fault_00" + n
+            return "Fault_00" + n
         if len(n) == 2:
-            self.number = "Fault_0" + n
+            return "Fault_0" + n
         if len(n) == 3:
-            self.number = "Fault_" + n
-        if self.text == "":
-            self.text = self.number
-
+            return "Fault_" + n
