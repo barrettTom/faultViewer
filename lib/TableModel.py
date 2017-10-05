@@ -93,7 +93,6 @@ class TableModel(QAbstractTableModel):
                 self.faults = self.remEmptyFaults(self.faults)
                 self.faults = self.genEmptyFaults(self.faults)
                 self.faults = sorted(self.faults, key = lambda fault : fault.number)  
-
             elif index.column() == 3:
                 self.faults[index.row()].giveLiteral(value)
             return True
@@ -127,6 +126,11 @@ class TableModel(QAbstractTableModel):
         for program in self.root.iter("Program"):
             for rung in program.iter("Rung"):
                 fault = Fault(program, rung)
+                if fault.valid: faults.append(fault)
+
+        for program in self.root.iter("Program"):
+            for line in program.iter("Line"):
+                fault = Fault(program, line, line.getprevious())
                 if fault.valid: faults.append(fault)
         
         faults = self.genEmptyFaults(faults)

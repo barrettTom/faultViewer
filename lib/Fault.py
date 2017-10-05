@@ -2,36 +2,59 @@ import lxml.etree as ET
 from lxml.etree import tostring, fromstring, XMLParser
 
 class Fault(object):
-    def __init__(self, program, rung=None):
+    def __init__(self, program, rung=None, prevLine=None):
         try:
-            textElement = str(rung.find("Text").text)
-            
-            f = textElement.find("AOI_Fault_Set_Reset")
-            
-            if f == -1:
-                raise Exception
-
-            self.fullElement = rung.find("Text")
-
-            textElement = textElement[f:]
-            p = textElement.find(')')
-            textElement = textElement[:p].split(',')[2:4]
-
-            self.index = int(textElement[0])
-            self.number = self.numberFormat(self.index)
-            self.catagory = self.catagoryFix(textElement[1])
-            self.literal = self.getLiteral(rung)
-            self.text = self.getText(program, self.literal)
-            self.element = self.getElement(rung)
-            self.valid = True
-
+            if prevLine is None:
+                self.rungInit(program, rung)
+            else:
+                self.stInit(program, rung, prevLine)
         except:
             self.index = program
             self.number = self.numberFormat(self.index)
             self.catagory = ""
             self.text = self.number
             self.literal = ""
+            self.st = False
             self.valid = False
+    
+    def stInit(self, program, rung, prevLine):
+        if "AOI_Fault_Set_Reset" in rung.text:
+            self.fullElement = [rung, prevLine]
+            self.program = program
+            self.index = int(rung.text.split(",")[2])
+            self.number = self.numberFormat(self.index)
+            self.catagory = self.catagoryFix(rung.text.split(",")[3].strip())
+            self.literal = prevLine.text.strip()
+            self.text = self.getText(program, self.literal)
+            self.element = self.getElement(rung)
+            self.st = True
+            self.valid = True
+        else:
+            raise Exception
+
+    def rungInit(self, program, rung):
+        textElement = str(rung.find("Text").text)
+        
+        f = textElement.find("AOI_Fault_Set_Reset")
+        
+        if f == -1:
+            raise Exception
+
+        self.fullElement = rung.find("Text")
+
+        textElement = textElement[f:]
+        self.program = program
+        p = textElement.find(')')
+        textElement = textElement[:p].split(',')[2:4]
+
+        self.index = int(textElement[0])
+        self.number = self.numberFormat(self.index)
+        self.catagory = self.catagoryFix(textElement[1])
+        self.literal = self.getLiteral(rung)
+        self.text = self.getText(program, self.literal)
+        self.element = self.getElement(rung)
+        self.st = False
+        self.valid = True
 
     def getText(self, program, literal):
         if len(literal.split(':')) == 2:
@@ -90,7 +113,10 @@ class Fault(object):
 
         self.number = self.number.replace(oldNum, newNum)
         
-        string = tostring(self.fullElement)
+        if self.st:
+            string = tostring(self.fullElement[0])
+        else:
+            string = tostring(self.fullElement)
 
         newNum = bytes(str(int(newNum)), encoding="utf-8")
         oldNum = bytes(str(int(oldNum)), encoding="utf-8")
@@ -99,16 +125,25 @@ class Fault(object):
 
         replacement = fromstring(string, parser = XMLParser(strip_cdata=False))
 
-        self.fullElement.getparent().replace(self.fullElement, replacement)
+        if self.st:
+            self.fullElement[0].getparent().replace(self.fullElement[0], replacement)
+            self.fullElement[0] = replacement
 
-        self.fullElement = replacement
+        else:
+            self.fullElement.getparent().replace(self.fullElement, replacement)
+            self.fullElement = replacement
 
         self.index = int(newNum)
 
     def giveLiteral(self, value):
-        self.literal = value
-        self.element.text = ET.CDATA(self.format(value))
-        self.text = self.getText(self.literal)
+        if not self.st:
+            self.literal = value
+            self.element.text = ET.CDATA(self.format(value))
+            self.text = self.getText(self.program, self.literal)
+        else:
+            self.literal = value
+            self.fullElement[1].text = ET.CDATA(value)
+            self.text = self.getText(self.program, self.literal)
 
     def getElement(self, rung):
         element = rung.find("Comment")
