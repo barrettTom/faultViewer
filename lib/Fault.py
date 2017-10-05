@@ -2,14 +2,15 @@ import lxml.etree as ET
 from lxml.etree import tostring, fromstring, XMLParser
 
 class Fault(object):
-    def __init__(self, program, rung=None, prevLine=None):
+    def __init__(self, rung=None, prevLine=None):
         try:
             if prevLine is None:
-                self.rungInit(program, rung)
+                self.rungInit(rung)
             else:
-                self.stInit(program, rung, prevLine)
+                self.stInit(rung, prevLine)
+            self.valid = True
         except:
-            self.index = program
+            self.index = rung
             self.number = self.numberFormat(self.index)
             self.catagory = ""
             self.text = self.number
@@ -17,22 +18,20 @@ class Fault(object):
             self.st = False
             self.valid = False
     
-    def stInit(self, program, rung, prevLine):
+    def stInit(self, rung, prevLine):
         if "AOI_Fault_Set_Reset" in rung.text:
             self.fullElement = [rung, prevLine]
-            self.program = program
             self.index = int(rung.text.split(",")[2])
             self.number = self.numberFormat(self.index)
             self.catagory = self.catagoryFix(rung.text.split(",")[3].strip())
             self.literal = prevLine.text.strip()
-            self.text = self.getText(program, self.literal)
             self.element = self.getElement(rung)
+            self.text = self.getText(self.literal)
             self.st = True
-            self.valid = True
         else:
             raise Exception
 
-    def rungInit(self, program, rung):
+    def rungInit(self, rung):
         textElement = str(rung.find("Text").text)
         
         f = textElement.find("AOI_Fault_Set_Reset")
@@ -43,7 +42,6 @@ class Fault(object):
         self.fullElement = rung.find("Text")
 
         textElement = textElement[f:]
-        self.program = program
         p = textElement.find(')')
         textElement = textElement[:p].split(',')[2:4]
 
@@ -51,18 +49,17 @@ class Fault(object):
         self.number = self.numberFormat(self.index)
         self.catagory = self.catagoryFix(textElement[1])
         self.literal = self.getLiteral(rung)
-        self.text = self.getText(program, self.literal)
         self.element = self.getElement(rung)
+        self.text = self.getText(self.literal)
         self.st = False
-        self.valid = True
 
-    def getText(self, program, literal):
+    def getText(self, literal):
         if len(literal.split(':')) == 2:
             comment = literal.split(':')[1]
         elif len(literal.split(':')) == 3:
             comment = literal.split(':')[1] + literal.split(':')[2]
 
-        name = program.attrib['Name'].split("_")[1]
+        name = self.element.getparent().getparent().getparent().getparent().getparent().attrib['Name'].split("_")[1]
         mtn = name[:3]
         stn = name[3:]
         if stn == "":
@@ -139,11 +136,11 @@ class Fault(object):
         if not self.st:
             self.literal = value
             self.element.text = ET.CDATA(self.format(value))
-            self.text = self.getText(self.program, self.literal)
+            self.text = self.getText(self.literal)
         else:
             self.literal = value
             self.fullElement[1].text = ET.CDATA(value)
-            self.text = self.getText(self.program, self.literal)
+            self.text = self.getText(self.literal)
 
     def getElement(self, rung):
         element = rung.find("Comment")

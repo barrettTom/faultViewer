@@ -123,15 +123,13 @@ class TableModel(QAbstractTableModel):
     def getFaults(self):
         faults = []
 
-        for program in self.root.iter("Program"):
-            for rung in program.iter("Rung"):
-                fault = Fault(program, rung)
-                if fault.valid: faults.append(fault)
+        for rung in self.root.iter("Rung"):
+            fault = Fault(rung)
+            if fault.valid: faults.append(fault)
 
-        for program in self.root.iter("Program"):
-            for line in program.iter("Line"):
-                fault = Fault(program, line, line.getprevious())
-                if fault.valid: faults.append(fault)
+        for line in self.root.iter("Line"):
+            fault = Fault(line, line.getprevious())
+            if fault.valid: faults.append(fault)
         
         faults = self.genEmptyFaults(faults)
 
