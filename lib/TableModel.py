@@ -128,7 +128,7 @@ class TableModel(QAbstractTableModel):
             if fault.valid: faults.append(fault)
 
         for line in self.root.iter("Line"):
-            fault = Fault(line, line.getprevious())
+            fault = Fault(line)
             if fault.valid: faults.append(fault)
         
         faults = self.genEmptyFaults(faults)
