@@ -1,20 +1,24 @@
 import lxml.etree as ET
 from lxml.etree import tostring, fromstring, XMLParser
 
+class notValidException(Exception):
+    pass
+
 class Fault(object):
     def __init__(self, element):
         try:
-            if element.tag == "Rung":
+            if type(element) is int:
+                self.index = element
+                self.number = self.numberFormat(self.index)
+                self.catagory = ""
+                self.text = self.number
+                self.literal = ""
+            elif element.tag == "Rung":
                 self.rungInit(element)
             else:
                 self.stInit(element)
             self.valid = True
-        except:
-            self.index = element
-            self.number = self.numberFormat(self.index)
-            self.catagory = ""
-            self.text = self.number
-            self.literal = ""
+        except notValidException:
             self.valid = False
 
     def rungInit(self, rung):
@@ -22,7 +26,7 @@ class Fault(object):
 
         f = textElement.find("AOI_Fault_Set_Reset")
         if f == -1:
-            raise Exception
+            raise notValidException
 
         textElement = textElement[f:]
         p = textElement.find(')')
@@ -43,10 +47,14 @@ class Fault(object):
             self.number = self.numberFormat(self.index)
             self.catagory = self.catagoryFix(line.text.split(",")[3].strip())
             self.literal = line.getprevious().text.strip()
-            self.text = self.getText(self.literal)
+            if "//" in self.literal:
+                self.text = self.getText(self.literal)
+            else:
+                self.literal = "ERROR: NEED TO HAVE COMMENT ABOVE FAULT LINE"
+                self.text = self.literal
             self.st = True
         else:
-            raise Exception
+            raise notValidException
 
     def getText(self, literal):
         if len(literal.split(':')) == 2:
@@ -97,7 +105,7 @@ class Fault(object):
                 r = literal.text.split("\n")[1]
             return r
         else:
-            return False
+            return "ERROR: DOES NOT HAVE COMMENT, ADD IN STUDIO 5000"
 
     def giveNumber(self, value):
         newNum = value.split("_")[1]
