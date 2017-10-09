@@ -115,7 +115,7 @@ class TableModel(QAbstractTableModel):
         os.remove(path+'utf-8')
 
     def export(self, path):
-        with open(path+'.csv', 'w', newline = '') as csvFile:
+        with open(path, 'w', newline = '') as csvFile:
             writer = csv.writer(csvFile)
             for fault in self.faults:
                 writer.writerow([fault.number, fault.catagory, fault.text, fault.literal])

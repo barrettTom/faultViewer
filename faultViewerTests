@@ -1,0 +1,31 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import unittest
+
+from PyQt5.QtWidgets import QApplication
+from filecmp import cmp
+from imp import load_source
+faultViewer = load_source("faultViewer","faultViewer")
+
+app = QApplication(sys.argv)
+
+class faultViewerTest(unittest.TestCase):
+    def setUp(self):
+        self.form = faultViewer.faultViewer()
+
+    def test_csvExport(self):
+        self.form.open("506.L5X")
+        self.form.fix100Toggle()
+        self.form.export("my506.csv")
+
+        with open("506.csv") as correct:
+            with open("my506.csv") as test:
+                for i in range(1000):
+                    self.assertMultiLineEqual(correct.readline(), test.readline())
+
+        os.remove("my506.csv")
+
+if __name__ == '__main__':
+    unittest.main()

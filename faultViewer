@@ -48,9 +48,12 @@ class faultViewer(QMainWindow):
         if self.model:
             self.model.save()
 
-    def export(self):
+    def export(self, f = None):
         if self.model:
-            path = QFileDialog.getSaveFileName(self)[0]
+            if not f:
+                path = QFileDialog.getSaveFileName(self)[0]
+            else:
+                path = f
             if path:
                 self.model.export(path)
 
@@ -72,8 +75,7 @@ class faultViewer(QMainWindow):
     def fix100Toggle(self):
         self.model.fix100Toggle()
 
-app = QApplication(sys.argv)
-
-masterView = faultViewer()
-
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    masterView = faultViewer()
+    sys.exit(app.exec_())
