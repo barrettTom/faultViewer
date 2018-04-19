@@ -137,7 +137,7 @@ class TableModel(QAbstractTableModel):
 
     def genEmptyFaults(self, faults):
         emptyfaults = []
-        for i in list(range(1000)):
+        for i in list(range(2000)):
             fault = Fault(i)
             emptyfaults.append(fault)
 

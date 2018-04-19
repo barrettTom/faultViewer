@@ -43,16 +43,19 @@ class Fault(object):
     def stInit(self, line):
         if "AOI_Fault_Set_Reset" in line.text:
             self.element = line
-            self.index = int(line.text.split(",")[2])
-            self.number = self.numberFormat(self.index)
-            self.catagory = self.catagoryFix(line.text.split(",")[3].strip())
-            self.literal = line.getprevious().text.strip()
-            if "//" in self.literal:
-                self.text = self.getText(self.literal)
-            else:
-                self.literal = "ERROR: NEED TO HAVE COMMENT ABOVE FAULT LINE"
-                self.text = self.literal
-            self.st = True
+            try:
+                self.index = int(line.text.split(",")[2])
+                self.number = self.numberFormat(self.index)
+                self.catagory = self.catagoryFix(line.text.split(",")[3].strip())
+                self.literal = line.getprevious().text.strip()
+                if "//" in self.literal:
+                    self.text = self.getText(self.literal)
+                else:
+                    self.literal = "ERROR: NEED TO HAVE COMMENT ABOVE FAULT LINE"
+                    self.text = self.literal
+                self.st = True
+            except IndexError:
+                raise notValidException
         else:
             raise notValidException
 
@@ -154,8 +157,10 @@ class Fault(object):
     def numberFormat(self, number):
         n = str(number)
         if len(n) == 1:
-            return "Fault_00" + n
+            return "Fault_000" + n
         if len(n) == 2:
-            return "Fault_0" + n
+            return "Fault_00" + n
         if len(n) == 3:
+            return "Fault_0" + n
+        if len(n) == 4:
             return "Fault_" + n
